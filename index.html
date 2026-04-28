@@ -198,22 +198,17 @@
     </div>
     <div id="tError" class="error hidden"></div>
     <div id="tResults" class="hidden" style="margin-top:18px;">
-      <div style="margin-bottom:10px; font-size:0.8rem; color:var(--muted);">
-        VDOT: <span id="tVdotValue" style="color:var(--accent); font-weight:700;"></span>
-      </div>
       <div class="zone-grid" id="tZonesGrid"></div>
+      <div style="margin-top:16px;">
+        <table>
+          <thead><tr><th>Vzdálenost</th><th>Predikce</th><th>Tempo /km</th></tr></thead>
+          <tbody id="tPredictionsTable"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
   <div id="results" class="hidden">
-    <div class="card">
-      <h2>Vaše VDOT</h2>
-      <div class="vdot-display">
-        <div class="vdot-number" id="vdotValue">–</div>
-        <div class="vdot-label">ekvivalentní VO₂max (ml/kg/min)</div>
-      </div>
-    </div>
-
     <div class="card">
       <h2>Tréninkové zóny</h2>
       <div class="zone-grid" id="zonesGrid"></div>
@@ -299,6 +294,19 @@ const ZONE_SPLITS = {
   R: [{ label:'200 m', m:200 }, { label:'300 m', m:300 }, { label:'400 m', m:400 }],
 };
 
+function renderPredictions(vdot, highlightDistM) {
+  return DISTANCES.map(d => {
+    const t   = predictTime(vdot, d.m);
+    const mpm = d.m / (t / 60);
+    const cls = highlightDistM && Math.abs(d.m - highlightDistM) < 1 ? ' class="highlight-row"' : '';
+    return `<tr${cls}>
+      <td class="strong">${d.label}</td>
+      <td class="strong">${fmtSec(t)}</td>
+      <td>${pacePerKm(mpm)}</td>
+    </tr>`;
+  }).join('');
+}
+
 function renderZoneCard(z, v) {
   const splits = ZONE_SPLITS[z.key] || [];
   const splitsHtml = splits.length ? `
@@ -368,26 +376,13 @@ function calculate() {
     return;
   }
 
-  document.getElementById('vdotValue').textContent = vdot.toFixed(1);
-
   // Training zones
   document.getElementById('zonesGrid').innerHTML = ZONES.map(z => {
-    const v = velocityAtPct(vdot, z.pct);
-    return renderZoneCard(z, v);
+    return renderZoneCard(z, velocityAtPct(vdot, z.pct));
   }).join('');
 
   // Predictions – highlight the input distance
-  const selectedDist = distM;
-  document.getElementById('predictionsTable').innerHTML = DISTANCES.map(d => {
-    const t   = predictTime(vdot, d.m);
-    const mpm = d.m / (t / 60);
-    const cls = Math.abs(d.m - selectedDist) < 1 ? ' class="highlight-row"' : '';
-    return `<tr${cls}>
-      <td class="strong">${d.label}</td>
-      <td class="strong">${fmtSec(t)}</td>
-      <td>${pacePerKm(mpm)}</td>
-    </tr>`;
-  }).join('');
+  document.getElementById('predictionsTable').innerHTML = renderPredictions(vdot, distM);
 
   resultsEl.classList.remove('hidden');
   resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -418,12 +413,11 @@ function calculateFromT() {
     return;
   }
 
-  document.getElementById('tVdotValue').textContent = vdot.toFixed(1);
-
   document.getElementById('tZonesGrid').innerHTML = ZONES.map(z => {
-    const v = velocityAtPct(vdot, z.pct);
-    return renderZoneCard(z, v);
+    return renderZoneCard(z, velocityAtPct(vdot, z.pct));
   }).join('');
+
+  document.getElementById('tPredictionsTable').innerHTML = renderPredictions(vdot, null);
 
   resultsEl.classList.remove('hidden');
 }
