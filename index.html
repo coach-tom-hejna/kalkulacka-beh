@@ -9,18 +9,18 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #e3e2de;
-      --surface: #ffffff;
-      --border: #cccbc5;
-      --accent: #1351aa;
-      --accent2: #0e419a;
-      --text: #111318;
-      --muted: #6b6f78;
-      --E: #15803d;
-      --M: #1351aa;
-      --T: #a16207;
-      --I: #b91c1c;
-      --R: #6d28d9;
+      --bg: #0f1923;
+      --surface: #172030;
+      --border: #243650;
+      --accent: #4a8de8;
+      --accent2: #3a7dd8;
+      --text: #e4ecf4;
+      --muted: #6e8fad;
+      --E: #34d399;
+      --M: #60a5fa;
+      --T: #fbbf24;
+      --I: #f87171;
+      --R: #c084fc;
     }
     body {
       font-family: 'TT Hoves', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -64,7 +64,7 @@
     }
     select:focus, input[type="text"]:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(19,81,170,0.12);
+      box-shadow: 0 0 0 3px rgba(74,141,232,0.18);
     }
     input[type="text"] { width: 160px; }
     button {
@@ -103,16 +103,16 @@
       font-weight: 700;
       font-size: 0.8rem;
     }
-    .zone-E { background: rgba(21,128,61,0.12); color: var(--E); }
-    .zone-M { background: rgba(19,81,170,0.12); color: var(--M); }
-    .zone-T { background: rgba(161,98,7,0.12); color: var(--T); }
-    .zone-I { background: rgba(185,28,28,0.12); color: var(--I); }
-    .zone-R { background: rgba(109,40,217,0.12); color: var(--R); }
+    .zone-E { background: rgba(52,211,153,0.12); color: var(--E); }
+    .zone-M { background: rgba(96,165,250,0.12); color: var(--M); }
+    .zone-T { background: rgba(251,191,36,0.12); color: var(--T); }
+    .zone-I { background: rgba(248,113,113,0.12); color: var(--I); }
+    .zone-R { background: rgba(192,132,252,0.12); color: var(--R); }
     .hidden { display: none; }
     .error { color: #b91c1c; font-size: 0.85rem; margin-top: 10px; }
     .strong { font-weight: 600; }
     .sub { color: var(--muted); font-size: 0.8rem; }
-    .highlight-row td { background: rgba(19,81,170,0.06); }
+    .highlight-row td { background: rgba(74,141,232,0.1); }
 
     .zone-grid {
       display: grid;
@@ -137,11 +137,11 @@
     .zone-card .zc-split-label { color: var(--muted); }
     .zone-card .zc-split-val { font-weight: 600; }
 
-    .zc-E { background: rgba(21,128,61,0.08); border-color: rgba(21,128,61,0.25); color: var(--E); }
-    .zc-M { background: rgba(19,81,170,0.08); border-color: rgba(19,81,170,0.25); color: var(--M); }
-    .zc-T { background: rgba(161,98,7,0.08); border-color: rgba(161,98,7,0.25); color: var(--T); }
-    .zc-I { background: rgba(185,28,28,0.08); border-color: rgba(185,28,28,0.25); color: var(--I); }
-    .zc-R { background: rgba(109,40,217,0.08); border-color: rgba(109,40,217,0.25); color: var(--R); }
+    .zc-E { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.25); color: var(--E); }
+    .zc-M { background: rgba(96,165,250,0.08); border-color: rgba(96,165,250,0.25); color: var(--M); }
+    .zc-T { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.25); color: var(--T); }
+    .zc-I { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.25); color: var(--I); }
+    .zc-R { background: rgba(192,132,252,0.08); border-color: rgba(192,132,252,0.25); color: var(--R); }
 
     @media (max-width: 540px) {
       .zone-grid { grid-template-columns: repeat(3, 1fr); }
@@ -158,7 +158,7 @@
 <div class="container">
   <header>
     <img src="turecoach_logo_2.png" alt="Coach Tom Hejna"
-         style="display:block;margin:0 auto 20px;width:150px;"/>
+         style="display:block;margin:0 auto 20px;width:150px;filter:brightness(0) invert(1);opacity:0.9;"/>
     <h1>Kalkulačka běžeckého tempa</h1>
   </header>
 
@@ -226,6 +226,21 @@
         </thead>
         <tbody id="predictionsTable"></tbody>
       </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:8px;">
+    <h2>Převod tempa ↔ rychlost</h2>
+    <div style="display:flex; gap:24px; flex-wrap:wrap; align-items:flex-end;">
+      <div class="input-group">
+        <label>Tempo (min/km)</label>
+        <input type="text" id="convPace" placeholder="4:30" style="width:130px;" oninput="convertFromPace()" />
+      </div>
+      <div style="display:flex; align-items:center; padding-bottom:10px; color:var(--muted); font-size:1.2rem;">⇄</div>
+      <div class="input-group">
+        <label>Rychlost (km/h)</label>
+        <input type="text" id="convSpeed" placeholder="13.3" style="width:130px;" oninput="convertFromSpeed()" />
+      </div>
     </div>
   </div>
 </div>
@@ -428,6 +443,24 @@ document.getElementById('raceTime').addEventListener('keydown', e => {
 document.getElementById('tPaceInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') calculateFromT();
 });
+
+// ─── Převodník tempa ↔ rychlost ───────────────────────────────────────────────
+function convertFromPace() {
+  const val = document.getElementById('convPace').value.trim();
+  const t   = parseTime(val);
+  if (!t || t <= 0) { document.getElementById('convSpeed').value = ''; return; }
+  const kmh = 60 / (t / 60);   // 60 min / (sec_per_km / 60)
+  document.getElementById('convSpeed').value = kmh.toFixed(2);
+}
+
+function convertFromSpeed() {
+  const val = parseFloat(document.getElementById('convSpeed').value);
+  if (!val || val <= 0) { document.getElementById('convPace').value = ''; return; }
+  const secPerKm = 3600 / val;
+  const m = Math.floor(secPerKm / 60);
+  const s = Math.round(secPerKm % 60);
+  document.getElementById('convPace').value = `${m}:${String(s).padStart(2, '0')}`;
+}
 </script>
 </body>
 </html>
