@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VDOT – Jack Daniels</title>
+  <style>
+    @import url('https://fonts.cdnfonts.com/css/tt-hoves');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #e3e2de;
+      --surface: #ffffff;
+      --border: #cccbc5;
+      --accent: #1351aa;
+      --accent2: #0e419a;
+      --text: #111318;
+      --muted: #6b6f78;
+      --E: #15803d;
+      --M: #1351aa;
+      --T: #a16207;
+      --I: #b91c1c;
+      --R: #6d28d9;
+    }
+    body {
+      font-family: 'TT Hoves', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+    header { text-align: center; margin-bottom: 32px; }
+    header h1 { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    header p { color: var(--muted); margin-top: 6px; font-size: 0.9rem; }
+    .container { max-width: 720px; margin: 0 auto; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+    .input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-group label { font-size: 0.8rem; color: var(--muted); }
+    select, input[type="text"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(19,81,170,0.12);
+    }
+    input[type="text"] { width: 160px; }
+    button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 28px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    button:hover { background: var(--accent2); }
+    .vdot-display { text-align: center; padding: 12px 0 4px; }
+    .vdot-number { font-size: 4.5rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .vdot-label { color: var(--muted); margin-top: 6px; font-size: 0.85rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 8px 10px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 11px 10px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    tr:last-child td { border-bottom: none; }
+    .zone-badge {
+      display: inline-block;
+      padding: 3px 11px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .zone-E { background: rgba(21,128,61,0.12); color: var(--E); }
+    .zone-M { background: rgba(19,81,170,0.12); color: var(--M); }
+    .zone-T { background: rgba(161,98,7,0.12); color: var(--T); }
+    .zone-I { background: rgba(185,28,28,0.12); color: var(--I); }
+    .zone-R { background: rgba(109,40,217,0.12); color: var(--R); }
+    .hidden { display: none; }
+    .error { color: #b91c1c; font-size: 0.85rem; margin-top: 10px; }
+    .strong { font-weight: 600; }
+    .sub { color: var(--muted); font-size: 0.8rem; }
+    .highlight-row td { background: rgba(19,81,170,0.06); }
+
+    .zone-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .zone-card {
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 1px solid transparent;
+    }
+    .zone-card .zc-key { font-weight: 700; font-size: 1.1rem; margin-bottom: 2px; }
+    .zone-card .zc-name { font-size: 0.7rem; color: var(--muted); margin-bottom: 10px; }
+    .zone-card .zc-pace { font-weight: 600; font-size: 1rem; }
+    .zone-card .zc-unit { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .zone-card .zc-mile { display: none; }
+    .zone-card .zc-desc { font-size: 0.68rem; color: var(--muted); margin-top: 8px; line-height: 1.3; }
+    .zone-card .zc-splits { margin-top: 10px; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 8px; display: flex; flex-direction: column; gap: 3px; }
+    .zone-card .zc-split-row { display: flex; justify-content: space-between; font-size: 0.68rem; }
+    .zone-card .zc-split-label { color: var(--muted); }
+    .zone-card .zc-split-val { font-weight: 600; }
+
+    .zc-E { background: rgba(21,128,61,0.08); border-color: rgba(21,128,61,0.25); color: var(--E); }
+    .zc-M { background: rgba(19,81,170,0.08); border-color: rgba(19,81,170,0.25); color: var(--M); }
+    .zc-T { background: rgba(161,98,7,0.08); border-color: rgba(161,98,7,0.25); color: var(--T); }
+    .zc-I { background: rgba(185,28,28,0.08); border-color: rgba(185,28,28,0.25); color: var(--I); }
+    .zc-R { background: rgba(109,40,217,0.08); border-color: rgba(109,40,217,0.25); color: var(--R); }
+
+    @media (max-width: 540px) {
+      .zone-grid { grid-template-columns: repeat(3, 1fr); }
+      .input-row { flex-direction: column; align-items: stretch; }
+      input[type="text"] { width: 100%; }
+      button { width: 100%; }
+    }
+    @media (max-width: 360px) {
+      .zone-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <img src="turecoach_logo_2.png" alt="Coach Tom Hejna"
+         style="display:block;margin:0 auto 20px;width:150px;"/>
+    <h1>Kalkulačka běžeckého tempa</h1>
+  </header>
+
+  <div class="card">
+    <h2>Závodní výsledek</h2>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Vzdálenost</label>
+        <select id="distance">
+          <option value="1500">1 500 m</option>
+          <option value="1609.344">1 míle</option>
+          <option value="3000">3 000 m</option>
+          <option value="5000" selected>5 km</option>
+          <option value="10000">10 km</option>
+          <option value="15000">15 km</option>
+          <option value="21097.5">Půlmaraton</option>
+          <option value="42195">Maraton</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Čas (mm:ss nebo h:mm:ss)</label>
+        <input type="text" id="raceTime" placeholder="25:30" />
+      </div>
+      <button onclick="calculate()">Vypočítat</button>
+    </div>
+    <div id="error" class="error hidden"></div>
+  </div>
+
+  <div class="card">
+    <h2>Tempa ze znám&eacute;ho T tempa</h2>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Threshold tempo (min/km)</label>
+        <input type="text" id="tPaceInput" placeholder="4:45" />
+      </div>
+      <button onclick="calculateFromT()">Vypočítat</button>
+    </div>
+    <div id="tError" class="error hidden"></div>
+    <div id="tResults" class="hidden" style="margin-top:18px;">
+      <div style="margin-bottom:10px; font-size:0.8rem; color:var(--muted);">
+        VDOT: <span id="tVdotValue" style="color:var(--accent); font-weight:700;"></span>
+      </div>
+      <div class="zone-grid" id="tZonesGrid"></div>
+    </div>
+  </div>
+
+  <div id="results" class="hidden">
+    <div class="card">
+      <h2>Vaše VDOT</h2>
+      <div class="vdot-display">
+        <div class="vdot-number" id="vdotValue">–</div>
+        <div class="vdot-label">ekvivalentní VO₂max (ml/kg/min)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tréninkové zóny</h2>
+      <div class="zone-grid" id="zonesGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Predikce závodních časů</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Vzdálenost</th>
+            <th>Predikce</th>
+            <th>Tempo /km</th>
+          </tr>
+        </thead>
+        <tbody id="predictionsTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── VDOT formulas (Jack Daniels / Daniels & Gilbert 1979) ────────────────────
+
+function calcVDOT(distanceM, timeSec) {
+  const t = timeSec / 60;            // minutes
+  const v = distanceM / t;           // meters/minute
+  const vo2  = -4.60 + 0.182258 * v + 0.000104 * v * v;
+  const pct  = 0.8
+             + 0.1894393  * Math.exp(-0.012778  * t)
+             + 0.2989558  * Math.exp(-0.1932605 * t);
+  return vo2 / pct;
+}
+
+function predictTime(vdot, distanceM) {
+  // Binary search: find t so that calcVDOT(distanceM, t) === vdot
+  let lo = distanceM / 28;   // upper speed bound (~100 km/h – impossible but safe)
+  let hi = distanceM / 0.5;  // lower speed bound (very slow walk)
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2;
+    calcVDOT(distanceM, mid) > vdot ? lo = mid : hi = mid;
+  }
+  return (lo + hi) / 2; // seconds
+}
+
+// Velocity (m/min) at a given fraction of VDOT (simplified, without time correction)
+function velocityAtPct(vdot, pct) {
+  const vo2 = vdot * pct;
+  const a = 0.000104, b = 0.182258, c = -(4.60 + vo2);
+  return (-b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+}
+
+// ─── Formatting ───────────────────────────────────────────────────────────────
+
+function fmtSec(sec) {
+  const s = Math.round(sec);
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const r = s % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(r).padStart(2,'0')}`;
+  return `${m}:${String(r).padStart(2,'0')}`;
+}
+
+function pacePerKm(mpm)   { return fmtSec(60000 / mpm); }
+function pacePerMile(mpm) { return fmtSec(96560.64 / mpm); }
+
+function parseTime(str) {
+  const parts = str.trim().split(':').map(Number);
+  if (parts.length === 2) return isNaN(parts[0]) || isNaN(parts[1]) ? null : parts[0]*60 + parts[1];
+  if (parts.length === 3) return parts.some(isNaN) ? null : parts[0]*3600 + parts[1]*60 + parts[2];
+  return null;
+}
+
+// Čas pro konkrétní vzdálenost při rychlosti v (m/min)
+function distTime(distM, mpm) { return fmtSec(distM / mpm * 60); }
+
+// Vzdálenosti zobrazované pod tempem pro každou zónu
+const ZONE_SPLITS = {
+  E: [],
+  M: [{ label:'5 km', m:5000 }, { label:'10 km', m:10000 }, { label:'21 km', m:21097.5 }],
+  T: [{ label:'400 m', m:400 }],
+  I: [{ label:'200 m', m:200 }, { label:'400 m', m:400 }, { label:'800 m', m:800 }, { label:'1200 m', m:1200 }],
+  R: [{ label:'200 m', m:200 }, { label:'300 m', m:300 }, { label:'400 m', m:400 }],
+};
+
+function renderZoneCard(z, v) {
+  const splits = ZONE_SPLITS[z.key] || [];
+  const splitsHtml = splits.length ? `
+    <div class="zc-splits">
+      ${splits.map(s => `
+        <div class="zc-split-row">
+          <span class="zc-split-label">${s.label}</span>
+          <span class="zc-split-val">${distTime(s.m, v)}</span>
+        </div>`).join('')}
+    </div>` : '';
+  return `
+    <div class="zone-card zc-${z.key}">
+      <div class="zc-key">${z.key}</div>
+      <div class="zc-name">${z.name}</div>
+      <div class="zc-pace">${pacePerKm(v)}</div>
+      <div class="zc-unit">min/km</div>
+      <div class="zc-mile">${pacePerMile(v)} /míli</div>
+      <div class="zc-desc">${z.desc}</div>
+      ${splitsHtml}
+    </div>`;
+}
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const ZONES = [
+  { key:'E', name:'Easy',       pct:0.65, desc:'Volný běh, konverzace' },
+  { key:'M', name:'Marathon',   pct:0.80, desc:'Maratonské závodní tempo' },
+  { key:'T', name:'Threshold',  pct:0.86, desc:'Komfortně těžké, tempo' },
+  { key:'I', name:'Interval',   pct:0.98, desc:'Tvrdé intervaly' },
+  { key:'R', name:'Repetition', pct:1.05, desc:'Krátké úseky, rychlost' },
+];
+
+const DISTANCES = [
+  { label:'1 500 m',    m:1500 },
+  { label:'1 míle',     m:1609.344 },
+  { label:'3 000 m',    m:3000 },
+  { label:'5 km',       m:5000 },
+  { label:'10 km',      m:10000 },
+  { label:'15 km',      m:15000 },
+  { label:'Půlmaraton', m:21097.5 },
+  { label:'Maraton',    m:42195 },
+];
+
+// ─── UI ───────────────────────────────────────────────────────────────────────
+
+function calculate() {
+  const errEl     = document.getElementById('error');
+  const resultsEl = document.getElementById('results');
+  errEl.classList.add('hidden');
+
+  const distM   = parseFloat(document.getElementById('distance').value);
+  const timeSec = parseTime(document.getElementById('raceTime').value);
+
+  if (!timeSec || timeSec <= 0) {
+    errEl.textContent = 'Zadej platný čas ve formátu mm:ss nebo h:mm:ss.';
+    errEl.classList.remove('hidden');
+    resultsEl.classList.add('hidden');
+    return;
+  }
+
+  const vdot = calcVDOT(distM, timeSec);
+
+  if (vdot < 20 || vdot > 105) {
+    errEl.textContent = 'Výsledek mimo rozsah VDOT tabulky. Zkontroluj zadaný čas.';
+    errEl.classList.remove('hidden');
+    resultsEl.classList.add('hidden');
+    return;
+  }
+
+  document.getElementById('vdotValue').textContent = vdot.toFixed(1);
+
+  // Training zones
+  document.getElementById('zonesGrid').innerHTML = ZONES.map(z => {
+    const v = velocityAtPct(vdot, z.pct);
+    return renderZoneCard(z, v);
+  }).join('');
+
+  // Predictions – highlight the input distance
+  const selectedDist = distM;
+  document.getElementById('predictionsTable').innerHTML = DISTANCES.map(d => {
+    const t   = predictTime(vdot, d.m);
+    const mpm = d.m / (t / 60);
+    const cls = Math.abs(d.m - selectedDist) < 1 ? ' class="highlight-row"' : '';
+    return `<tr${cls}>
+      <td class="strong">${d.label}</td>
+      <td class="strong">${fmtSec(t)}</td>
+      <td>${pacePerKm(mpm)}</td>
+    </tr>`;
+  }).join('');
+
+  resultsEl.classList.remove('hidden');
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function calculateFromT() {
+  const errEl     = document.getElementById('tError');
+  const resultsEl = document.getElementById('tResults');
+  errEl.classList.add('hidden');
+
+  const timeSec = parseTime(document.getElementById('tPaceInput').value);
+  if (!timeSec || timeSec <= 0) {
+    errEl.textContent = 'Zadej platné tempo ve formátu mm:ss (minuty na km).';
+    errEl.classList.remove('hidden');
+    resultsEl.classList.add('hidden');
+    return;
+  }
+
+  // T pace is 86% VO2max → back-calculate VDOT
+  const mpm  = 1000 / (timeSec / 60);   // meters per minute
+  const vo2T = -4.60 + 0.182258 * mpm + 0.000104 * mpm * mpm;
+  const vdot = vo2T / 0.86;
+
+  if (vdot < 20 || vdot > 105) {
+    errEl.textContent = 'Tempo mimo rozsah VDOT tabulky. Zkontroluj zadanou hodnotu.';
+    errEl.classList.remove('hidden');
+    resultsEl.classList.add('hidden');
+    return;
+  }
+
+  document.getElementById('tVdotValue').textContent = vdot.toFixed(1);
+
+  document.getElementById('tZonesGrid').innerHTML = ZONES.map(z => {
+    const v = velocityAtPct(vdot, z.pct);
+    return renderZoneCard(z, v);
+  }).join('');
+
+  resultsEl.classList.remove('hidden');
+}
+
+document.getElementById('raceTime').addEventListener('keydown', e => {
+  if (e.key === 'Enter') calculate();
+});
+document.getElementById('tPaceInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') calculateFromT();
+});
+</script>
+</body>
+</html>
